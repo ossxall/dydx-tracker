@@ -1,0 +1,10 @@
+services:
+  tracker:
+    networks:
+      - default
+      - indexer
+
+networks:
+  indexer:
+    external: true
+    name: ${INDEXER_DOCKER_NETWORK:-dydx-indexer_default}

@@ -1,0 +1,49 @@
+services:
+  kafka:
+    # Listener externo de la configuración upstream, limitado a loopback.
+    ports: !override
+      - "127.0.0.1:29092:29092"
+    environment:
+      # Mantener logs estables y persistentes durante el largo catch-up histórico.
+      KAFKA_LOG_DIRS: /kafka/kafka-logs
+      KAFKA_LOG_RETENTION_HOURS: "87600"
+    volumes:
+      - indexer-kafka-logs:/kafka/kafka-logs
+      - indexer-zookeeper-data:/tmp/zookeeper
+
+  postgres:
+    # El tracker accede por la red Docker; no publicar la base en el host.
+    ports: !override []
+    volumes:
+      - indexer-postgres:/var/lib/postgresql/data
+
+  ender:
+    ports: !override []
+
+  redis:
+    ports: !override []
+
+  roundtable:
+    ports: !override []
+
+  vulcan:
+    ports: !override []
+
+  comlink:
+    environment:
+      TENDERMINT_WS_URL: ws://host.docker.internal:26657/websocket
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports: !override
+      - "127.0.0.1:3002:3002"
+
+  socks:
+    environment:
+      COMLINK_URL: comlink:3002
+    ports: !override
+      - "127.0.0.1:3003:3003"
+
+volumes:
+  indexer-kafka-logs:
+  indexer-zookeeper-data:
+  indexer-postgres:
